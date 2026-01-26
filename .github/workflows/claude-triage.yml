@@ -1,0 +1,30 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    # Only run on new issues or @claude mentions
+    if: |
+      github.event_name == 'issues' ||
+      contains(github.event.comment.body, '@claude')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Analyze this issue and:
+            1. Determine type: bug, enhancement, or question
+            2. Determine status: needs-repro, needs-confirmation, or ready-for-work
+            3. Add appropriate labels
+            4. Post a helpful comment if needed
+
+            Be concise. Use casual maintainer voice.
